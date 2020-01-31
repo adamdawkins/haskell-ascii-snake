@@ -6,14 +6,14 @@ import           System.Console.ANSI
 import           System.IO
 import           System.Timeout
 
-inputTimeout = 250000         -- in microseconds
+inputTimeout = 500000         -- in microseconds
 
 type Position = (Int, Int)
 
-type GameState = (Command, Position)
+type GameState = (Command, [Position])
 
 initialGameState :: GameState
-initialGameState = (MoveUp, (12, 40))
+initialGameState = (MoveUp, [(12, 40)])
 
 data Command
   = MoveUp
@@ -38,33 +38,41 @@ initScreen = do
   hSetEcho stdin False
   clearScreen
 
-draw :: Position -> IO ()
-draw (row, col) = do
+draw :: [Position] -> IO ()
+draw ((row,col):body) = do
   setCursorPosition row col
   putChar '@'
-  setCursorPosition 25 0
+  drawBody body
+  where
+    drawBody ((row, col):bs) = do
+      setCursorPosition row col
+      putChar 'o'
+      drawBody bs
+    drawBody [] = setCursorPosition 25 0
 
-clear :: Position -> IO ()
-clear (row, col) = do
+clear :: [Position] -> IO ()
+clear ((row, col):ps) = do
   setCursorPosition row col
   putChar ' '
-  setCursorPosition 25 0
+  clear ps
 
-advance :: Command -> Position -> Position
-advance MoveUp (row, col)    = (row - 1, col)
-advance MoveDown (row, col)  = (row + 1, col)
-advance MoveLeft (row, col)  = (row, col - 1)
-advance MoveRight (row, col) = (row, col + 1)
-advance _ state              = state
+clear [] = setCursorPosition 25 0
+
+advance :: Command -> [Position] -> [Position]
+advance MoveUp    ((row, col):ps) = (row - 1, col) : (row,col) : ps
+advance MoveDown  ((row, col):ps) = (row + 1, col) : (row,col) : ps
+advance MoveLeft  ((row, col):ps) = (row, col - 1) : (row,col) : ps
+advance MoveRight ((row, col):ps) = (row, col + 1) : (row,col) : ps
+advance _ state                   = state
 
 
 loop :: GameState -> IO ()
 loop gameState = do
   let command = fst gameState
-  let position = snd gameState
-  let newPosition = advance command position
+  let positions = snd gameState
+  let newPosition = advance command positions
 
-  clear position
+  clear positions
   draw newPosition
 
   c <- timeout inputTimeout getChar -- wait for input, with timeout
