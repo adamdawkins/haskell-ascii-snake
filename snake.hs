@@ -4,8 +4,16 @@ import           Control.Monad
 
 import           System.Console.ANSI
 import           System.IO
+import           System.Timeout
+
+inputTimeout = 250000         -- in microseconds
 
 type Position = (Int, Int)
+
+type GameState = (Command, Position)
+
+initialGameState :: GameState
+initialGameState = (MoveUp, (12, 40))
 
 data Command
   = MoveUp
@@ -49,17 +57,30 @@ advance MoveLeft (row, col)  = (row, col - 1)
 advance MoveRight (row, col) = (row, col + 1)
 advance _ state              = state
 
--- playGame :: Position -> Command -> IO ()
-playGame currentState command = do
-  let newState = advance command currentState
-  clear currentState
-  draw newState
-  return newState
+
+loop :: GameState -> IO ()
+loop gameState = do
+  let command = fst gameState
+  let position = snd gameState
+  let newPosition = advance command position
+
+  clear position
+  draw newPosition
+
+  c <- timeout inputTimeout getChar -- wait for input, with timeout
+
+  case c of
+    -- no input given
+    Nothing    -> loop (command, newPosition)
+
+    -- quit on 'q'
+    Just 'q'   -> putStrLn "quitting..."
+
+    -- input given
+    Just input -> loop (newCommand, advance command (snd gameState))
+      where newCommand = parseCommand input
 
 main :: IO ()
 main = do
   initScreen
-  draw (12, 40)
-  userInput <- getContents
-  let commands = map parseCommand userInput
-  foldM_ playGame (12, 40) commands
+  loop initialGameState
