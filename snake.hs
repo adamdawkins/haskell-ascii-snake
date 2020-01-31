@@ -1,9 +1,9 @@
 module Snake where
 
-import Control.Monad
+import           Control.Monad
 
-import System.Console.ANSI
-import System.IO
+import           System.Console.ANSI
+import           System.IO
 
 type Position = (Int, Int)
 
@@ -21,7 +21,7 @@ parseCommand 'j' = MoveDown
 parseCommand 'h' = MoveLeft
 parseCommand 'l' = MoveRight
 parseCommand 'q' = Quit
-parseCommand _ = Unknown
+parseCommand _   = Unknown
 
 initScreen :: IO ()
 initScreen = do
@@ -43,11 +43,11 @@ clear (row, col) = do
   setCursorPosition 25 0
 
 advance :: Command -> Position -> Position
-advance MoveUp (row, col) = (row - 1, col)
-advance MoveDown (row, col) = (row + 1, col)
-advance MoveLeft (row, col) = (row, col - 1)
+advance MoveUp (row, col)    = (row - 1, col)
+advance MoveDown (row, col)  = (row + 1, col)
+advance MoveLeft (row, col)  = (row, col - 1)
 advance MoveRight (row, col) = (row, col + 1)
-advance _ state = state
+advance _ state              = state
 
 -- playGame :: Position -> Command -> IO ()
 playGame currentState command = do
