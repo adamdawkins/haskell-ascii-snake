@@ -7,9 +7,9 @@ import           System.IO
 import           System.Timeout
 
 inputTimeout = 500000         -- in microseconds
+snakeLength  = 5
 
 type Position = (Int, Int)
-
 type GameState = (Command, [Position])
 
 initialGameState :: GameState
@@ -42,7 +42,7 @@ draw :: [Position] -> IO ()
 draw ((row,col):body) = do
   setCursorPosition row col
   putChar '@'
-  drawBody body
+  drawBody $ take snakeLength body
   where
     drawBody ((row, col):bs) = do
       setCursorPosition row col

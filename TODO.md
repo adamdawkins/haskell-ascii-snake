@@ -4,12 +4,12 @@
 * Quit the game
 * Keep moving over time without pressing a key
 * draw an inifite snake body <-- 3.0.0
+* limit size of snake body
 
 # WIP
 
 
 # TODO
-* limit size of snake body
 * hitting self is game over
 * eliminate screen flicker
 * add apples
